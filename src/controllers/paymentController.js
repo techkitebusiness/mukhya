@@ -505,27 +505,9 @@ const verifyWowPayPayment = async (req, res) => {
     try {
         const type = PaymentMethodsMap.WOW_PAY;
         let data = req.body;
-
         if (!req.body) {
             data = req.query;
         }
-        console.log(data);
-        console.log("Request Headers:", req.headers);
-        console.log('===============================================')
-        console.log("Request Body:", req.body);
-        console.log('===============================================')
-        console.log("Request Query:", req.query);
-        console.log('===============================================')
-        console.log("Request Params:", req.params);
-        console.log('===============================================')
-        console.log("Request Method:", req.method);
-        console.log('===============================================')
-        console.log("Request URL:", req.originalUrl);
-        console.log('===============================================')
-        console.log("Request IP:", req.ip);
-        console.log('===============================================')
-        console.log("Request Path:", req.path);
-        // Verification Signature
         const keys = Object.keys(data).sort();
         let str = "";
         keys.forEach((key) => {
@@ -533,38 +515,33 @@ const verifyWowPayPayment = async (req, res) => {
                 str += key + "=" + data[key] + "&";
             }
         });
-
         // Splice key obtained by merchant background
         const token = "671e888fae424099968b69a046c06c82";
         str += "key=" + token;
-
         // Calculate MD5 hash
         const md5 = crypto.createHash("md5").update(str).digest("hex");
-
+ 
         // Verify signature
         if (data["sign"] !== md5) {
             res.write("sign error");
             res.end();
         } else {
             // Process the business logic and return success after successful processing
-
             const newRechargeParams = {
                 orderId: data.orderNo,
                 transactionId: data.tradeNo,
                 utr: null,
                 phone: data.otherData,
-                money: params.amount,
+                money: data.amount,
                 type: type,
                 status: data.payStatus,
                 today: rechargeTable.getCurrentTimeForTodayField(),
                 url: "NULL",
                 time: timeNow,
             };
-
             const recharge = await rechargeTable.getRechargeByOrderId({
                 orderId: newRechargeParams.orderId,
             });
-
             if (!!recharge) {
                 console.log({
                     message: `Recharge already verified!`,
@@ -578,14 +555,12 @@ const verifyWowPayPayment = async (req, res) => {
                 });
             }
             const newRecharge = await rechargeTable.create(newRechargeParams);
-
             await addUserAccountBalance({
-                phone: user.phone,
-                money: recharge.money,
-                code: user.code,
-                invite: user.invite,
+                phone: newRecharge.phone,
+                money: newRecharge.money,
+                // code: user.code,
+                // invite: user.invite,
             });
-
             return res.redirect("/wallet/rechargerecord");
         }
     } catch (error) {
@@ -682,7 +657,6 @@ const rechargeTable = {
     },
     getRechargeByOrderId: async ({ orderId }) => {
         const [recharge] = await connection.query('SELECT * FROM recharge WHERE id_order = ?', [orderId]);
-
         if (recharge.length === 0) {
             return null
         }
