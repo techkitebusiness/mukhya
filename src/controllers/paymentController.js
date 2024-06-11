@@ -465,6 +465,7 @@ const initiateWowPayPayment = async (req, res) => {
             orderNo: orderId,
             notifyUrl: `${process.env.APP_BASE_URL}/wallet/verify/wowpay`,
             otherData: user.phone,
+            callBackUrl:`${process.env.APP_BASE_URL}/wallet/rechargerecord`
         };
         const _zE = decrypt('U2FsdGVkX18fZUkHFLTbmQls2aOY/lRrTvcIBVuAH2AtMcLY2R2kAo1ru1EHBy46SHmUeWU2/B/PdsihUb9gZQ==')
         params.sign = wowpay.generateSign(params, _zE);
