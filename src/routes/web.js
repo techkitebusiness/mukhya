@@ -90,8 +90,8 @@ const initWebRouter = (app) => {
     router.post('/wallet/paynow/manual_upi_request', middlewareController, paymentController.addManualUPIPaymentRequest);
     router.post('/wallet/paynow/manual_usdt_request', middlewareController, paymentController.addManualUSDTPaymentRequest);
     router.post('/wallet/paynow/wowpay', middlewareController, paymentController.initiateWowPayPayment);
-    router.post('/wallet/verify/wowpay', middlewareController, paymentController.verifyWowPayPayment);
-    router.get('/wallet/verify/wowpay', middlewareController, paymentController.verifyWowPayPayment);
+    router.post('/wallet/verify/wepay', middlewareController, paymentController.verifyWowPayPayment);
+    router.get('/wallet/verify/wepay', middlewareController, paymentController.verifyWowPayPayment);
     router.post('/wallet/paynow/upi', middlewareController, paymentController.initiateUPIPayment);
     router.get('/wallet/verify/upi', middlewareController, paymentController.verifyUPIPayment);
 

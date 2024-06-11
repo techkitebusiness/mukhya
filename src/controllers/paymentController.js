@@ -456,18 +456,18 @@ const initiateWowPayPayment = async (req, res) => {
             await Promise.all(deleteRechargeQueries)
         }
         const orderId = getRechargeOrderId()
-        const _zD = decrypt('U2FsdGVkX1+E8jZqS3uId/iCQSaTxXL5h9tMS+wNlNU=')
+        const _zD = '3n599129'
         const _nl = decrypt('U2FsdGVkX1+takmNuqNYTCurscQ/sJp1qwizoA9mxexz+lULClQJ9eQH9qrjdLMbYQgURTVg2JiIZBr+PGajyg==')
         const params = {
             mchId: _zD,
-            passageId: '17701',
+            passageId: '101',
             amount: money,
             orderNo: orderId,
-            notifyUrl: `${process.env.APP_BASE_URL}/wallet/verify/wowpay`,
+            notifyUrl: `${process.env.APP_BASE_URL}/wallet/verify/wepay`,
             otherData: user.phone,
             callBackUrl:`${process.env.APP_BASE_URL}/wallet/rechargerecord`
         };
-        const _zE = decrypt('U2FsdGVkX18fZUkHFLTbmQls2aOY/lRrTvcIBVuAH2AtMcLY2R2kAo1ru1EHBy46SHmUeWU2/B/PdsihUb9gZQ==')
+        const _zE = '671e888fae424099968b69a046c06c82'
         params.sign = wowpay.generateSign(params, _zE);
         console.log(params)
         const _al = decrypt('U2FsdGVkX186qmz9E+Ebq6N0bbNPB+SM8gAth7c6SaZwdjBhBQEbK98QWYsSFHSr2c6PU243ojdbGONu0NpbM0k/EFEoywYZ8f8ZmEF2o4I=')
@@ -498,10 +498,109 @@ const initiateWowPayPayment = async (req, res) => {
     }
 }
 
-const verifyWowPayPayment = async (req, res) => {
+// const verifyWowPayPayment = async (req, res) => {
    
-}
+// }
+const verifyWowPayPayment = async (req, res) => {
+    try {
+        const type = PaymentMethodsMap.WOW_PAY;
+        let data = req.body;
 
+        if (!req.body) {
+            data = req.query;
+        }
+        console.log(data);
+        console.log("Request Headers:", req.headers);
+        console.log('===============================================')
+        console.log("Request Body:", req.body);
+        console.log('===============================================')
+        console.log("Request Query:", req.query);
+        console.log('===============================================')
+        console.log("Request Params:", req.params);
+        console.log('===============================================')
+        console.log("Request Method:", req.method);
+        console.log('===============================================')
+        console.log("Request URL:", req.originalUrl);
+        console.log('===============================================')
+        console.log("Request IP:", req.ip);
+        console.log('===============================================')
+        console.log("Request Path:", req.path);
+        // Verification Signature
+        const keys = Object.keys(data).sort();
+        let str = "";
+        keys.forEach((key) => {
+            if (data[key] !== null && key !== "sign") {
+                str += key + "=" + data[key] + "&";
+            }
+        });
+
+        // Splice key obtained by merchant background
+        const token = "671e888fae424099968b69a046c06c82";
+        str += "key=" + token;
+
+        // Calculate MD5 hash
+        const md5 = crypto.createHash("md5").update(str).digest("hex");
+
+        // Verify signature
+        if (data["sign"] !== md5) {
+            res.write("sign error");
+            res.end();
+        } else {
+            // Process the business logic and return success after successful processing
+
+            const newRechargeParams = {
+                orderId: data.orderNo,
+                transactionId: data.tradeNo,
+                utr: null,
+                phone: data.otherData,
+                money: params.amount,
+                type: type,
+                status: data.payStatus,
+                today: rechargeTable.getCurrentTimeForTodayField(),
+                url: "NULL",
+                time: timeNow,
+            };
+
+            const recharge = await rechargeTable.getRechargeByOrderId({
+                orderId: newRechargeParams.orderId,
+            });
+
+            if (!!recharge) {
+                console.log({
+                    message: `Recharge already verified!`,
+                    status: true,
+                    timeStamp: timeNow,
+                });
+                return res.status(400).json({
+                    message: `Recharge already verified!`,
+                    status: true,
+                    timeStamp: timeNow,
+                });
+            }
+            const newRecharge = await rechargeTable.create(newRechargeParams);
+
+            await addUserAccountBalance({
+                phone: user.phone,
+                money: recharge.money,
+                code: user.code,
+                invite: user.invite,
+            });
+
+            return res.redirect("/wallet/rechargerecord");
+        }
+    } catch (error) {
+        console.log({
+            status: false,
+            message: "Something went wrong!",
+            timestamp: timeNow,
+        });
+        return res.status(500).json({
+            status: false,
+            message: "Something went wrong!",
+            timestamp: timeNow,
+        });
+    }
+};
 
 // helpers ---------------
 const getUserDataByAuthToken = async (authToken) => {
