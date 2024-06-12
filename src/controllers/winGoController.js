@@ -235,7 +235,7 @@ const betWinGo = async (req, res) => {
 
     let userInfo = user[0];
     let period = winGoNow[0].period;
-    let fee = (x * money) * 0.02;
+    let fee = (x * money) * 0.0;
     let total = (x * money) - fee;
     let timeNow = Date.now();
     let check = userInfo.money - total;
