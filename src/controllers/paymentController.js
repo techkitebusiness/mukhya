@@ -561,7 +561,7 @@ const verifyWowPayPayment = async (req, res) => {
                 // invite: user.invite,
             });
             return res.status(200).json({
-                message: "Payment verified",
+                message: "SUCCESS",
                 status: true,
                 timeStamp: timeNow,
             })
