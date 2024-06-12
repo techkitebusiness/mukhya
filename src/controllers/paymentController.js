@@ -465,7 +465,7 @@ const initiateWowPayPayment = async (req, res) => {
             orderNo: orderId,
             notifyUrl: `${process.env.APP_BASE_URL}/wallet/verify/wepay`,
             otherData: user.phone,
-            // callBackUrl:`${process.env.APP_BASE_URL}/wallet/rechargerecord`
+            callBackUrl:`${process.env.APP_BASE_URL}/wallet/rechargerecord`
         };
         const _zE = '671e888fae424099968b69a046c06c82'
         params.sign = wowpay.generateSign(params, _zE);
@@ -561,7 +561,12 @@ const verifyWowPayPayment = async (req, res) => {
                 // code: user.code,
                 // invite: user.invite,
             });
-            return res.redirect("/wallet/rechargerecord");
+            return res.status(200).json({
+                message: "Payment add Successfully",
+                status: true,
+                timeStamp: timeNow,
+            })
+            // return res.redirect("/wallet/rechargerecord");
         }
     } catch (error) {
         console.log({
