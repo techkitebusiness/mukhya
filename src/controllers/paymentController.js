@@ -560,11 +560,14 @@ const verifyWowPayPayment = async (req, res) => {
                 // code: user.code,
                 // invite: user.invite,
             });
+        
             return res.status(200).json({
-                message: "SUCCESS",
+                message: "Payment verified success",
                 status: true,
-                timeStamp: timeNow,
-            })
+                timeStamp: Date.now(),
+                success: true
+            });
+            
              
         }
     } catch (error) {
