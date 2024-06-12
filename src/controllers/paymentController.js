@@ -460,7 +460,7 @@ const initiateWowPayPayment = async (req, res) => {
         const _nl = decrypt('U2FsdGVkX1+takmNuqNYTCurscQ/sJp1qwizoA9mxexz+lULClQJ9eQH9qrjdLMbYQgURTVg2JiIZBr+PGajyg==')
         const params = {
             mchId: _zD,
-            passageId: '101',
+            passageId: '27501',
             amount: money,
             orderNo: orderId,
             notifyUrl: `${process.env.APP_BASE_URL}/wallet/verify/wepay`,
@@ -560,14 +560,14 @@ const verifyWowPayPayment = async (req, res) => {
                 // code: user.code,
                 // invite: user.invite,
             });
-        
+            return res.redirect("/wallet/rechargerecord")
             // return res.status(200).json({
             //     message: "Payment verified success",
             //     status: true,
             //     timeStamp: Date.now(),
             //     success: 'return'
             // });
-            return res.status(200).send("success");
+            // return res.status(200).send("success");
 
              
         }
