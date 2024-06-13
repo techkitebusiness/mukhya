@@ -525,6 +525,7 @@ const verifyWowPayPayment = async (req, res) => {
             res.write("sign error");
             res.end();
         } else {
+            
             // Process the business logic and return success after successful processing
             const newRechargeParams = {
                 orderId: data.orderNo,
@@ -605,8 +606,27 @@ const getUserDataByAuthToken = async (authToken) => {
 
 
 const addUserAccountBalance = async ({money, phone }) => {
-    let _money=money + money*.20
-    await connection.query('UPDATE users SET money = money + ?, total_money = total_money + ? WHERE phone = ? ', [_money, _money, phone]);
+    let _money=money + (money / 100) * 20
+    
+    await connection.query('UPDATE users SET temp_money = temp_money + ? , money = money + ?, total_money = total_money + ? WHERE phone = ?', [_money,_money, _money,phone]);
+
+    const [rows2] = await connection.query(`SELECT * FROM users WHERE phone = ?`, [phone]);
+    let parentId = rows2[0].invite;
+
+    const [rows3] = await connection.query(`SELECT * FROM users WHERE code = ?`, [parentId]);
+    let parentPhone = rows3.length > 0 ? rows3[0].phone : '';
+
+    if (parentPhone != '') {
+        const [process] = await connection.query(`SELECT id, date FROM tbl_process WHERE status = 'N'`);
+        if (process.length > 0) {
+            let Pdate = process[0].date;
+            let Pid = process[0].id;
+            let amountSponsor =   (money / 100) * 10;
+            const sql = "INSERT INTO inc_direct SET process_id = ?, phone = ?, from_id = ?, total_amount = ?, returns = ?, net_amount = ?, date = ?";
+            await connection.execute(sql, [Pid, parentPhone, phone, money, 4, amountSponsor, Pdate]);
+            await connection.query('UPDATE users SET money = money + ?, total_money = total_money + ? WHERE phone = ?', [amountSponsor, amountSponsor, parentPhone]);
+        }
+    }
 }
 
 
