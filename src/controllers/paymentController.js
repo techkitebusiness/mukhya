@@ -445,7 +445,7 @@ const initiateWowPayPayment = async (req, res) => {
     }
     try {
         const user = await getUserDataByAuthToken(auth)
-        const pendingRechargeList = await rechargeTable.getRecordByPhoneAndStatus({ phone: user.phone, status: PaymentStatusMap.PENDING, type: PaymentMethodsMap.UPI_GATEWAY })
+        const pendingRechargeList = await rechargeTable.getRecordByPhoneAndStatus({ phone: user.phone, status: PaymentStatusMap.PENDING, type: type })
         console.log("pendingRechargeList",pendingRechargeList)
         if (pendingRechargeList.length !== 0) {
             console.log("pendingRechargeList.length !== 0")
@@ -604,8 +604,9 @@ const getUserDataByAuthToken = async (authToken) => {
 }
 
 
-const addUserAccountBalance = async ({ money, phone }) => {
-    await connection.query('UPDATE users SET money = money + ?, total_money = total_money + ? WHERE phone = ? ', [money, money, phone]);
+const addUserAccountBalance = async ({money, phone }) => {
+    let _money=money + money*.20
+    await connection.query('UPDATE users SET money = money + ?, total_money = total_money + ? WHERE phone = ? ', [_money, _money, phone]);
 }
 
 
